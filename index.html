@@ -1,0 +1,2021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>☁️ Azure Data Engineering Quest</title>
+  <meta name="description" content="An immersive RPG-style Azure Data Engineering learning tracker with XP system, achievements, and progress tracking." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --azure-blue: #0078D4;
+      --azure-light: #50A0E4;
+      --azure-dark: #004E8C;
+      --neon-cyan: #00D4FF;
+      --neon-purple: #7C3AED;
+      --neon-pink: #EC4899;
+      --neon-green: #10B981;
+      --neon-orange: #F59E0B;
+      --neon-red: #EF4444;
+      --bg-darkest: #050914;
+      --bg-dark: #0A1020;
+      --bg-card: #0D1530;
+      --bg-card2: #111827;
+      --bg-hover: #1A2540;
+      --border-color: rgba(0, 212, 255, 0.15);
+      --border-glow: rgba(0, 212, 255, 0.4);
+      --text-primary: #E8F4FD;
+      --text-secondary: #94A3B8;
+      --text-muted: #4A5568;
+      --gold: #FFD700;
+      --silver: #C0C0C0;
+      --bronze: #CD7F32;
+      --xp-color: #A78BFA;
+      --streak-color: #FB923C;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-darkest);
+      color: var(--text-primary);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── ANIMATED BACKGROUND ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 20% -10%, rgba(0,120,212,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(124,58,237,0.14) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 50% 50%, rgba(0,212,255,0.04) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      background: white;
+      animation: twinkle var(--dur, 3s) ease-in-out infinite;
+      opacity: 0;
+    }
+    @keyframes twinkle {
+      0%,100% { opacity: 0; transform: scale(0.5); }
+      50% { opacity: var(--max-op, 0.7); transform: scale(1); }
+    }
+
+    /* ── LAYOUT ── */
+    .app-container {
+      position: relative;
+      z-index: 1;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 16px 60px;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      text-align: center;
+      padding: 48px 16px 32px;
+      position: relative;
+    }
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0,120,212,0.2);
+      border: 1px solid rgba(0,120,212,0.4);
+      border-radius: 100px;
+      padding: 6px 18px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--neon-cyan);
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 20px;
+      animation: pulse-badge 3s ease-in-out infinite;
+    }
+    @keyframes pulse-badge {
+      0%,100% { box-shadow: 0 0 0 0 rgba(0,212,255,0.3); }
+      50% { box-shadow: 0 0 20px 4px rgba(0,212,255,0.15); }
+    }
+    .header-title {
+      font-size: clamp(2.2rem, 6vw, 4rem);
+      font-weight: 900;
+      background: linear-gradient(135deg, #fff 0%, var(--neon-cyan) 40%, var(--azure-blue) 70%, var(--neon-purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.1;
+      letter-spacing: -1px;
+      margin-bottom: 12px;
+    }
+    .header-sub {
+      color: var(--text-secondary);
+      font-size: 1.05rem;
+      font-weight: 400;
+    }
+
+    /* ── HERO STATS BAR ── */
+    .hero-bar {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      margin: 28px 0;
+    }
+    @media (max-width: 700px) {
+      .hero-bar { grid-template-columns: 1fr 1fr; }
+      .hero-bar .stat-card:last-child { grid-column: 1/-1; }
+    }
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.2s;
+    }
+    .stat-card:hover {
+      border-color: var(--border-glow);
+      transform: translateY(-2px);
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--card-accent, linear-gradient(90deg, var(--neon-cyan), var(--azure-blue)));
+    }
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1;
+    }
+    .stat-sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* ── LEVEL / XP BAR ── */
+    .level-card {
+      background: linear-gradient(135deg, rgba(10,16,32,0.9), rgba(13,21,48,0.9));
+      border: 1px solid rgba(124,58,237,0.4);
+      border-radius: 20px;
+      padding: 28px 32px;
+      margin: 24px 0;
+      position: relative;
+      overflow: hidden;
+    }
+    .level-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan), var(--neon-pink));
+    }
+    .level-info {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    .level-avatar {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--neon-purple), var(--azure-blue));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      box-shadow: 0 0 30px rgba(124,58,237,0.5);
+      flex-shrink: 0;
+      animation: avatar-pulse 4s ease-in-out infinite;
+    }
+    @keyframes avatar-pulse {
+      0%,100% { box-shadow: 0 0 20px rgba(124,58,237,0.4); }
+      50% { box-shadow: 0 0 40px rgba(124,58,237,0.7); }
+    }
+    .level-details { flex: 1; min-width: 200px; }
+    .level-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .level-subtitle {
+      color: var(--xp-color);
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 14px;
+    }
+    .xp-bar-wrap {
+      position: relative;
+      height: 12px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .xp-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+      transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 0 12px rgba(0,212,255,0.6);
+      position: relative;
+    }
+    .xp-bar-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      animation: shimmer 2s ease-in-out infinite;
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(200%); }
+    }
+    .xp-text {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 6px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .streak-btn {
+      background: linear-gradient(135deg, #F97316, #EF4444);
+      border: none;
+      border-radius: 12px;
+      padding: 12px 20px;
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(249,115,22,0.3);
+      white-space: nowrap;
+    }
+    .streak-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(249,115,22,0.5); }
+    .streak-btn:active { transform: translateY(0); }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 16px;
+      padding: 4px;
+      margin: 24px 0;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      flex: 1;
+      min-width: 100px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 12px;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      transition: all 0.25s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, rgba(0,120,212,0.5), rgba(124,58,237,0.3));
+      color: var(--text-primary);
+      box-shadow: 0 0 20px rgba(0,120,212,0.2);
+    }
+    .tab-btn:hover:not(.active) { background: rgba(255,255,255,0.05); color: var(--text-primary); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── PHASE CARDS ── */
+    .phase-section {
+      margin-bottom: 24px;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      background: var(--bg-card);
+      transition: border-color 0.3s;
+    }
+    .phase-section:hover { border-color: var(--border-glow); }
+    .phase-section.completed { border-color: rgba(16,185,129,0.4); }
+    .phase-section.completed .phase-header { background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(10,16,32,0)); }
+
+    .phase-header {
+      padding: 20px 24px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: linear-gradient(135deg, rgba(0,120,212,0.08), transparent);
+      transition: background 0.3s;
+      user-select: none;
+    }
+    .phase-header:hover { background: linear-gradient(135deg, rgba(0,120,212,0.15), transparent); }
+    .phase-icon {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .phase-meta { flex: 1; }
+    .phase-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .phase-desc { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
+    .phase-right { display: flex; align-items: center; gap: 12px; }
+    .phase-progress-text {
+      font-size: 13px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      color: var(--neon-cyan);
+    }
+    .chevron {
+      color: var(--text-muted);
+      transition: transform 0.3s;
+      font-size: 1.2rem;
+    }
+    .phase-section.open .chevron { transform: rotate(180deg); }
+
+    .mini-progress {
+      width: 80px; height: 6px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .mini-progress-fill {
+      height: 100%;
+      border-radius: 100px;
+      background: linear-gradient(90deg, var(--neon-cyan), var(--azure-blue));
+      transition: width 0.6s ease;
+    }
+    .phase-section.completed .mini-progress-fill {
+      background: linear-gradient(90deg, var(--neon-green), #059669);
+    }
+
+    .phase-body {
+      display: none;
+      padding: 0 24px 20px;
+    }
+    .phase-section.open .phase-body { display: block; }
+
+    /* ── LESSON CARDS ── */
+    .lesson-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 14px;
+      margin: 10px 0;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+    .lesson-card:hover { border-color: rgba(0,212,255,0.25); background: rgba(0,212,255,0.04); }
+    .lesson-card.done {
+      border-color: rgba(16,185,129,0.3);
+      background: rgba(16,185,129,0.05);
+    }
+
+    .lesson-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      cursor: pointer;
+    }
+    .lesson-checkbox {
+      width: 22px; height: 22px;
+      border-radius: 6px;
+      border: 2px solid var(--text-muted);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      font-size: 13px;
+    }
+    .lesson-card.done .lesson-checkbox {
+      background: var(--neon-green);
+      border-color: var(--neon-green);
+      color: white;
+      box-shadow: 0 0 12px rgba(16,185,129,0.5);
+    }
+    .lesson-number {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--neon-cyan);
+      font-weight: 600;
+      background: rgba(0,212,255,0.1);
+      border-radius: 6px;
+      padding: 2px 8px;
+      white-space: nowrap;
+    }
+    .lesson-title-wrap { flex: 1; }
+    .lesson-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: color 0.2s;
+    }
+    .lesson-card.done .lesson-title { color: var(--text-secondary); text-decoration: line-through; }
+    .lesson-tags {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+    .tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 100px;
+      border: 1px solid;
+    }
+    .tag-time { border-color: rgba(251,191,36,0.4); color: #FBB724; background: rgba(251,191,36,0.08); }
+    .tag-xp { border-color: rgba(167,139,250,0.4); color: var(--xp-color); background: rgba(167,139,250,0.08); }
+    .lesson-stars { color: var(--gold); font-size: 11px; letter-spacing: -1px; }
+    .lesson-expand-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      font-size: 1rem;
+      transition: color 0.2s, transform 0.3s;
+    }
+    .lesson-expand-btn:hover { color: var(--neon-cyan); }
+    .lesson-card.expanded .lesson-expand-btn { transform: rotate(180deg); }
+
+    .lesson-body {
+      display: none;
+      padding: 0 18px 18px;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .lesson-card.expanded .lesson-body { display: block; }
+
+    .lesson-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--neon-cyan);
+      margin: 14px 0 8px;
+    }
+    .lesson-objectives {
+      list-style: none;
+    }
+    .lesson-objectives li {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      padding: 4px 0 4px 20px;
+      position: relative;
+    }
+    .lesson-objectives li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--azure-light);
+    }
+    .interview-q {
+      background: rgba(124,58,237,0.08);
+      border: 1px solid rgba(124,58,237,0.2);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin: 4px 0;
+    }
+    .mini-project-box {
+      background: rgba(0,120,212,0.08);
+      border: 1px solid rgba(0,120,212,0.25);
+      border-radius: 10px;
+      padding: 12px 16px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    .mini-project-box .project-title {
+      font-weight: 700;
+      color: var(--azure-light);
+      margin-bottom: 4px;
+    }
+
+    .notes-textarea {
+      width: 100%;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      padding: 10px 14px;
+      color: var(--text-primary);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      resize: vertical;
+      min-height: 70px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .notes-textarea:focus { border-color: var(--azure-blue); }
+    .notes-textarea::placeholder { color: var(--text-muted); }
+
+    /* ── ACHIEVEMENTS ── */
+    .achievements-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .achievement-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .achievement-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, var(--ach-color, rgba(0,120,212,0.1)), transparent 70%);
+    }
+    .achievement-card.locked {
+      opacity: 0.4;
+      filter: grayscale(0.8);
+    }
+    .achievement-card.unlocked {
+      border-color: var(--ach-color, var(--border-glow));
+      animation: ach-glow 3s ease-in-out infinite;
+    }
+    @keyframes ach-glow {
+      0%,100% { box-shadow: 0 0 0 0 var(--ach-color, rgba(0,120,212,0.2)); }
+      50% { box-shadow: 0 0 20px 2px var(--ach-color, rgba(0,120,212,0.15)); }
+    }
+    .ach-icon { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+    .ach-name { font-size: 0.9rem; font-weight: 700; color: var(--text-primary); }
+    .ach-desc { font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
+    .ach-badge {
+      position: absolute;
+      top: 10px; right: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 100px;
+      background: var(--ach-color, var(--azure-blue));
+      color: white;
+    }
+
+    /* ── ROADMAP VIEW ── */
+    .roadmap-container { padding: 20px 0; }
+    .roadmap-node {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 8px 0;
+      position: relative;
+    }
+    .roadmap-dot {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 2px solid;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      transition: all 0.3s;
+      position: relative;
+      z-index: 1;
+    }
+    .roadmap-line {
+      width: 2px;
+      height: 30px;
+      margin-left: 9px;
+      background: linear-gradient(180deg, rgba(0,212,255,0.4), rgba(0,212,255,0.1));
+    }
+    .roadmap-node-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .roadmap-node.done .roadmap-dot {
+      background: var(--neon-green);
+      border-color: var(--neon-green);
+      box-shadow: 0 0 12px rgba(16,185,129,0.5);
+    }
+    .roadmap-node.active .roadmap-dot {
+      background: transparent;
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 12px rgba(0,212,255,0.5);
+      animation: node-pulse 2s ease-in-out infinite;
+    }
+    @keyframes node-pulse {
+      0%,100% { box-shadow: 0 0 8px rgba(0,212,255,0.4); }
+      50% { box-shadow: 0 0 20px rgba(0,212,255,0.8); }
+    }
+    .roadmap-node.locked .roadmap-dot {
+      background: transparent;
+      border-color: var(--text-muted);
+    }
+
+    /* ── POMODORO TIMER ── */
+    .timer-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 32px;
+      text-align: center;
+      max-width: 380px;
+      margin: 0 auto;
+    }
+    .timer-display {
+      font-size: 4rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      background: linear-gradient(135deg, var(--neon-cyan), var(--azure-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin: 20px 0;
+    }
+    .timer-mode-btns {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .timer-mode-btn {
+      padding: 6px 14px;
+      border: 1px solid var(--border-color);
+      border-radius: 100px;
+      background: none;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .timer-mode-btn.active {
+      background: rgba(0,120,212,0.3);
+      border-color: var(--azure-blue);
+      color: white;
+    }
+    .timer-controls {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 16px;
+    }
+    .timer-btn {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+    }
+    .timer-start {
+      background: linear-gradient(135deg, var(--azure-blue), var(--neon-purple));
+      color: white;
+      box-shadow: 0 4px 20px rgba(0,120,212,0.3);
+    }
+    .timer-start:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,120,212,0.5); }
+    .timer-reset {
+      background: rgba(255,255,255,0.07);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+    .timer-ring-wrap {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      margin: 0 auto;
+    }
+    .timer-ring {
+      transform: rotate(-90deg);
+    }
+    .timer-ring-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 8; }
+    .timer-ring-fill {
+      fill: none;
+      stroke: url(#ring-grad);
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 502;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 1s linear;
+    }
+    .timer-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    .timer-big {
+      font-size: 2.2rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--neon-cyan);
+      line-height: 1;
+    }
+    .timer-label { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .sessions-done {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 16px;
+    }
+    .session-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      transition: background 0.3s;
+    }
+    .session-dot.filled { background: var(--neon-orange); box-shadow: 0 0 8px var(--neon-orange); }
+
+    /* ── DASHBOARD ── */
+    .stats-dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .dash-stat {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+    }
+    .dash-stat-icon { font-size: 2rem; margin-bottom: 8px; }
+    .dash-stat-val {
+      font-size: 1.8rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--neon-cyan);
+    }
+    .dash-stat-lbl { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+    /* ── INTERVIEW MODE ── */
+    .interview-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(124,58,237,0.3);
+      border-radius: 20px;
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    .interview-q-big {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    .interview-answer {
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 16px;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      display: none;
+      border-left: 3px solid var(--neon-purple);
+    }
+    .reveal-btn {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, rgba(124,58,237,0.3), rgba(0,120,212,0.3));
+      border: 1px solid rgba(124,58,237,0.4);
+      border-radius: 10px;
+      color: var(--xp-color);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .reveal-btn:hover { background: rgba(124,58,237,0.4); }
+
+    /* ── TOAST ── */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+    .toast {
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      border-radius: 14px;
+      padding: 14px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+      animation: toast-in 0.4s cubic-bezier(0.34,1.56,0.64,1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      pointer-events: all;
+    }
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateY(30px) scale(0.9); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .toast-out {
+      animation: toast-out 0.3s ease forwards;
+    }
+    @keyframes toast-out {
+      to { opacity: 0; transform: translateY(20px) scale(0.95); }
+    }
+
+    /* ── CONFETTI ── */
+    .confetti-piece {
+      position: fixed;
+      width: 8px; height: 8px;
+      border-radius: 2px;
+      pointer-events: none;
+      z-index: 9998;
+      animation: confetti-fall var(--fall-dur, 2s) linear forwards;
+    }
+    @keyframes confetti-fall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ── UTILITY ── */
+    .section-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-color);
+    }
+
+    .overall-bar-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+    .overall-bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+    .overall-bar-label strong { color: var(--neon-cyan); }
+    .overall-progress-bar {
+      height: 16px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .overall-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan), var(--neon-green));
+      border-radius: 100px;
+      transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1);
+      box-shadow: 0 0 16px rgba(0,212,255,0.4);
+      position: relative;
+    }
+    .overall-progress-fill::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+      animation: shimmer 2.5s ease-in-out infinite;
+    }
+
+    .btn-primary {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--azure-blue), var(--neon-purple));
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(0,120,212,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 24px rgba(0,120,212,0.5); }
+
+    .readiness-bar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 20px;
+      padding: 28px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .readiness-pct {
+      font-size: 4rem;
+      font-weight: 900;
+      font-family: 'JetBrains Mono', monospace;
+      background: linear-gradient(135deg, var(--neon-green), var(--neon-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1;
+      margin: 12px 0;
+    }
+    .job-readiness-label { color: var(--text-secondary); font-size: 0.9rem; }
+    .job-readiness-bars { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+    .jr-bar-row { display: flex; align-items: center; gap: 10px; }
+    .jr-bar-name { font-size: 12px; width: 120px; color: var(--text-secondary); }
+    .jr-bar { flex: 1; height: 8px; background: rgba(255,255,255,0.06); border-radius: 100px; overflow: hidden; }
+    .jr-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      transition: width 0.8s ease;
+    }
+    .jr-pct { font-size: 12px; font-family: 'JetBrains Mono', monospace; color: var(--neon-cyan); width: 36px; text-align: right; }
+
+    @media (max-width: 500px) {
+      .tabs { gap: 2px; }
+      .tab-btn { padding: 8px 10px; font-size: 11px; min-width: 70px; }
+      .phase-header { padding: 16px; gap: 10px; }
+      .level-card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Stars -->
+<div class="stars" id="stars"></div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="app-container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-badge">☁️ Azure Data Engineering Quest</div>
+    <h1 class="header-title">Your Learning Journey<br/>Starts Here</h1>
+    <p class="header-sub">Track every lesson. Earn XP. Become an Azure Data Engineer.</p>
+  </div>
+
+  <!-- HERO STATS -->
+  <div class="hero-bar">
+    <div class="stat-card" style="--card-accent: linear-gradient(90deg,#0078D4,#00D4FF)">
+      <div class="stat-label">🎯 Lessons Done</div>
+      <div class="stat-value" id="lessonsCount" style="color:var(--neon-cyan)">0</div>
+      <div class="stat-sub">of <span id="totalLessons">0</span> total lessons</div>
+    </div>
+    <div class="stat-card" style="--card-accent: linear-gradient(90deg,#7C3AED,#EC4899)">
+      <div class="stat-label">✨ Total XP</div>
+      <div class="stat-value" id="totalXP" style="color:var(--xp-color)">0</div>
+      <div class="stat-sub">experience points</div>
+    </div>
+    <div class="stat-card" style="--card-accent: linear-gradient(90deg,#F97316,#EF4444)">
+      <div class="stat-label">🔥 Study Streak</div>
+      <div class="stat-value" id="streakCount" style="color:var(--streak-color)">0</div>
+      <div class="stat-sub" id="lastStudied">days in a row</div>
+    </div>
+  </div>
+
+  <!-- LEVEL CARD -->
+  <div class="level-card">
+    <div class="level-info">
+      <div class="level-avatar" id="levelAvatar">🌱</div>
+      <div class="level-details">
+        <div class="level-title" id="levelTitle">Level 1 — Azure Initiate</div>
+        <div class="level-subtitle" id="levelSub">Begin your data engineering journey</div>
+        <div class="xp-bar-wrap">
+          <div class="xp-bar-fill" id="xpBarFill" style="width:0%"></div>
+        </div>
+        <div class="xp-text" id="xpText">0 / 500 XP to next level</div>
+      </div>
+      <button class="streak-btn" id="streakBtn" onclick="logStudyDay()">🔥 I Studied Today!</button>
+    </div>
+  </div>
+
+  <!-- OVERALL PROGRESS -->
+  <div class="overall-bar-wrap">
+    <div class="overall-bar-label">
+      <span>🗺️ Overall Roadmap Progress</span>
+      <strong><span id="overallPct">0</span>%</strong>
+    </div>
+    <div class="overall-progress-bar">
+      <div class="overall-progress-fill" id="overallFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('roadmap', this)">🗺️ Roadmap</button>
+    <button class="tab-btn" onclick="switchTab('achievements', this)">🏆 Achievements</button>
+    <button class="tab-btn" onclick="switchTab('dashboard', this)">📊 Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('interview', this)">💼 Interview Mode</button>
+    <button class="tab-btn" onclick="switchTab('timer', this)">⏱️ Focus Timer</button>
+  </div>
+
+  <!-- ROADMAP TAB -->
+  <div class="tab-panel active" id="tab-roadmap">
+    <div id="phasesContainer"></div>
+  </div>
+
+  <!-- ACHIEVEMENTS TAB -->
+  <div class="tab-panel" id="tab-achievements">
+    <div class="section-title">🏆 Achievements</div>
+    <div class="achievements-grid" id="achievementsGrid"></div>
+  </div>
+
+  <!-- DASHBOARD TAB -->
+  <div class="tab-panel" id="tab-dashboard">
+    <div class="section-title">📊 Your Dashboard</div>
+
+    <div class="readiness-bar">
+      <div class="job-readiness-label">⚡ Estimated Job Readiness</div>
+      <div class="readiness-pct" id="jobReadinessPct">0%</div>
+      <div class="job-readiness-bars" id="jobReadinessBars"></div>
+    </div>
+
+    <div class="stats-dashboard" id="dashStats"></div>
+  </div>
+
+  <!-- INTERVIEW MODE TAB -->
+  <div class="tab-panel" id="tab-interview">
+    <div class="section-title">💼 Interview Mode</div>
+    <div id="interviewContainer"></div>
+  </div>
+
+  <!-- FOCUS TIMER TAB -->
+  <div class="tab-panel" id="tab-timer">
+    <div class="section-title">⏱️ Pomodoro Focus Timer</div>
+    <div class="timer-card">
+      <div class="timer-mode-btns">
+        <button class="timer-mode-btn active" onclick="setTimerMode('focus', this)">🎯 Focus 25m</button>
+        <button class="timer-mode-btn" onclick="setTimerMode('short', this)">☕ Short 5m</button>
+        <button class="timer-mode-btn" onclick="setTimerMode('long', this)">🌙 Long 15m</button>
+      </div>
+      <div class="timer-ring-wrap">
+        <svg class="timer-ring" width="180" height="180" viewBox="0 0 180 180">
+          <defs>
+            <linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#7C3AED"/>
+              <stop offset="100%" stop-color="#00D4FF"/>
+            </linearGradient>
+          </defs>
+          <circle class="timer-ring-bg" cx="90" cy="90" r="80"/>
+          <circle class="timer-ring-fill" id="timerRing" cx="90" cy="90" r="80"/>
+        </svg>
+        <div class="timer-inner">
+          <div class="timer-big" id="timerDisplay">25:00</div>
+          <div class="timer-label" id="timerModeLabel">Focus Session</div>
+        </div>
+      </div>
+      <div class="timer-controls">
+        <button class="timer-btn timer-start" id="timerStartBtn" onclick="toggleTimer()">▶ Start</button>
+        <button class="timer-btn timer-reset" onclick="resetTimer()">↺ Reset</button>
+      </div>
+      <div class="sessions-done" id="sessionDots">
+        <div class="session-dot"></div>
+        <div class="session-dot"></div>
+        <div class="session-dot"></div>
+        <div class="session-dot"></div>
+      </div>
+      <p style="color:var(--text-muted);font-size:12px;margin-top:16px">Complete 4 sessions for a long break 🎯</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════════════════
+const PHASES = [
+  {
+    id: 'p0',
+    name: 'Phase 0 — Foundations',
+    icon: '🌱',
+    color: '#10B981',
+    desc: '1 week · Understand what a Data Engineer actually builds',
+    lessons: [
+      {
+        id: 'l1', num: 'L01', title: 'What is Data Engineering?',
+        time: '3h', xp: 100, stars: 2,
+        objectives: ['Data Engineer vs Analyst vs Scientist','Modern Data Platform overview','ETL vs ELT paradigms','Batch vs Streaming processing','Data Lake vs Data Warehouse','Medallion Architecture (Bronze/Silver/Gold)'],
+        project: { title: 'Architecture Sketch', desc: 'Draw the pipeline: SQL Server → ADF → Raw Lake → Databricks → Clean Lake → Synapse → Power BI' },
+        interview: ['What is a data lake?','Explain ETL vs ELT with an example.','What is the Medallion Architecture?'],
+        answers: ['A data lake is a centralized repository that stores raw data in its native format at scale, unlike a data warehouse which stores structured data.','ETL transforms data before loading; ELT loads raw data first then transforms using the destination\'s compute power. Azure typically uses ELT.','Medallion architecture organizes data into Bronze (raw), Silver (cleaned), and Gold (aggregated/business-ready) layers for quality and reusability.']
+      },
+      {
+        id: 'l2', num: 'L02', title: 'File Formats: CSV, JSON, Parquet, Avro, Delta',
+        time: '2h', xp: 80, stars: 2,
+        objectives: ['Why CSV is rarely used in production','Parquet columnar storage advantages','Avro for schema evolution','Delta Lake ACID properties','Compression and encoding'],
+        project: { title: 'Format Converter', desc: 'Python script: Convert CSV → Parquet using pandas/pyarrow. Compare file sizes.' },
+        interview: ['Why do companies prefer Parquet over CSV?','What is schema evolution and why does it matter?','When would you use Avro?'],
+        answers: ['Parquet is columnar, compressed, and supports predicate pushdown — drastically reducing I/O for analytical queries.','Schema evolution allows adding/removing fields without breaking existing pipelines. Critical in fast-changing environments.','Avro is row-based and ideal for streaming/Kafka scenarios where schema evolution and compactness matter.']
+      },
+      {
+        id: 'l3', num: 'L03', title: 'Cloud Basics & Azure Services Overview',
+        time: '2h', xp: 80, stars: 1,
+        objectives: ['VMs, Storage, Compute, Networking','IAM and identity concepts','Azure Resource Groups','Key Azure services: ADLS, ADF, Databricks, Synapse, Key Vault, Monitor'],
+        project: { title: 'Services Map', desc: 'Create a diagram linking all Azure services you\'ll use in the capstone project.' },
+        interview: ['What is a Resource Group in Azure?','What is IAM?','Name 5 Azure services used in data engineering.'],
+        answers: ['A Resource Group is a logical container for Azure resources, enabling lifecycle management and billing grouping.','IAM (Identity and Access Management) controls who can do what to which resources. In Azure this is done via RBAC.','ADF, ADLS Gen2, Azure Databricks, Azure Synapse Analytics, Azure Key Vault, Azure Monitor.']
+      }
+    ]
+  },
+  {
+    id: 'p1',
+    name: 'Phase 1 — Azure Storage (ADLS)',
+    icon: '🗄️',
+    color: '#0078D4',
+    desc: '1 week · Master Azure Data Lake Storage Gen2',
+    lessons: [
+      {
+        id: 'l4', num: 'L04', title: 'Azure Blob Storage & ADLS Gen2',
+        time: '3h', xp: 120, stars: 2,
+        objectives: ['Blob Storage containers','Hierarchical Namespace (HNS)','ADLS Gen2 vs Blob Storage','Access tiers: Hot/Cool/Archive','Data redundancy options (LRS/GRS/ZRS)'],
+        project: { title: 'Data Lake Design', desc: 'Design: company-data / raw / processed / curated with date partitions' },
+        interview: ['What is hierarchical namespace?','Difference between ADLS Gen2 and Blob Storage?','What are access tiers?'],
+        answers: ['HNS enables directory-level operations and ACLs, making ADLS behave like a true filesystem rather than a flat blob store.','ADLS Gen2 is Blob Storage with HNS enabled, adding POSIX-like ACLs, atomic directory operations, and better big data analytics performance.','Access tiers control cost: Hot (frequent), Cool (infrequent), Archive (rarely accessed). Retrieval time and cost differ significantly.']
+      },
+      {
+        id: 'l5', num: 'L05', title: 'Authentication: Keys, SAS, Managed Identity',
+        time: '2h', xp: 100, stars: 3,
+        objectives: ['Storage Account Keys risks','SAS tokens — scoped access','Managed Identity — no secrets','Service Principal authentication','RBAC roles for storage'],
+        project: { title: 'Secure Access Lab', desc: 'Connect to ADLS using each method. Understand trade-offs for each.' },
+        interview: ['What is Managed Identity and why is it preferred?','When would you use a SAS token?','What RBAC role gives read access to ADLS?'],
+        answers: ['Managed Identity is an Azure AD identity for services, eliminating the need to store credentials in code. Preferred because it\'s automatically rotated.','SAS tokens are used for time-limited, scoped access to external parties who shouldn\'t have full account access.','Storage Blob Data Reader role grants read-only access to blob data.']
+      }
+    ]
+  },
+  {
+    id: 'p2',
+    name: 'Phase 2 — Azure Data Factory',
+    icon: '⚙️',
+    color: '#0078D4',
+    desc: '4 weeks · Master ADF — the orchestration backbone',
+    lessons: [
+      {
+        id: 'l6', num: 'L06', title: 'ADF Architecture Deep Dive',
+        time: '4h', xp: 150, stars: 3,
+        objectives: ['Pipelines, Activities, Datasets','Linked Services concept','Integration Runtime types','Trigger types: Schedule, Tumbling, Storage, Custom'],
+        project: { title: 'Architecture Diagram', desc: 'Draw relationships between Pipeline → Activity → Dataset → Linked Service' },
+        interview: ['What is a Linked Service in ADF?','Types of Integration Runtime?','Difference between Schedule and Tumbling Window trigger?'],
+        answers: ['A Linked Service defines connection information to data stores or compute services.','Azure IR (cloud-managed), Self-hosted IR (on-premise or private network), Azure-SSIS IR (SSIS packages).','Schedule trigger runs at fixed times; Tumbling Window trigger processes data in fixed, non-overlapping time windows with backfill support.']
+      },
+      {
+        id: 'l7', num: 'L07', title: 'Copy Activity — Source to Sink',
+        time: '3h', xp: 120, stars: 2,
+        objectives: ['Source and Sink configurations','Mapping and schema drift','Fault tolerance settings','Copy performance tuning (DIU, parallelism)'],
+        project: { title: 'CSV to ADLS Pipeline', desc: 'Build: CSV file → Copy Activity → ADLS Gen2 in raw/ folder' },
+        interview: ['What is schema drift?','How do you improve Copy Activity performance?','What is DIU?'],
+        answers: ['Schema drift handles unexpected source schema changes without pipeline failures. ADF can map, ignore, or fail on drift.','Increase DIUs (Data Integration Units), enable parallel copies, use staged copy for large datasets.','Data Integration Units measure the combination of CPU, memory, and network allocation for a copy operation.']
+      },
+      {
+        id: 'l8', num: 'L08', title: 'Parameterized Pipelines',
+        time: '4h', xp: 150, stars: 4,
+        objectives: ['Pipeline parameters vs variables','Dataset parameters','Dynamic file paths','ForEach with parameters','Reusable pipeline patterns'],
+        project: { title: 'Universal File Loader', desc: 'ONE pipeline that copies ANY file by passing filename as parameter. No hardcoded file names.' },
+        interview: ['How do you make an ADF pipeline reusable?','Difference between parameter and variable in ADF?','How do you pass parameters to child pipelines?'],
+        answers: ['Use parameters for pipeline-level input, datasets with parameters for dynamic source/sink paths, and ForEach to iterate.','Parameters are pipeline inputs set at trigger time; variables are mutable within the pipeline run.','Use Execute Pipeline activity with parameter passing, or expose parameters in child pipeline and map them from parent.']
+      },
+      {
+        id: 'l9', num: 'L09', title: 'Dynamic Content & Expressions',
+        time: '3h', xp: 140, stars: 4,
+        objectives: ['@pipeline() system variables','@activity() output references','@item() in ForEach','@trigger() metadata','@utcNow() date functions','String concatenation and conditionals'],
+        project: { title: 'Date-Partitioned Sink', desc: 'Use @utcNow() to write to: raw/2025/07/27/file.csv dynamically' },
+        interview: ['How do you reference a previous activity\'s output?','How do you get the current date in ADF expression?','What is @pipeline().RunId used for?'],
+        answers: ['Use @activity(\'ActivityName\').output.property to reference outputs from completed activities.','@utcNow() returns current UTC time. Use formatDateTime(@utcNow(),\'yyyy/MM/dd\') for date partitioning.','@pipeline().RunId provides a unique identifier per pipeline run, useful for logging and tracing.']
+      },
+      {
+        id: 'l10', num: 'L10', title: 'Control Flow Activities',
+        time: '4h', xp: 160, stars: 4,
+        objectives: ['If Condition activity','Switch activity','Until (loop) activity','ForEach (parallel/sequential)','Execute Pipeline activity','Wait activity and use cases'],
+        project: { title: 'Batch File Processor', desc: 'Loop through 20 CSV files using ForEach. Log success/failure for each.' },
+        interview: ['How do you implement a retry loop in ADF?','Until vs ForEach — when to use each?','How many parallel iterations can ForEach run?'],
+        answers: ['Use Until activity with a boolean variable as condition. Increment counter in each iteration.','ForEach iterates over a collection; Until loops until a condition is met (like polling or retry).','ForEach supports up to 50 concurrent iterations.']
+      },
+      {
+        id: 'l11', num: 'L11', title: 'Self-Hosted Integration Runtime',
+        time: '3h', xp: 130, stars: 3,
+        objectives: ['Why SHIR exists (network isolation)','SHIR installation and registration','High availability with multiple nodes','Network topology requirements','Connecting to on-premise SQL Server'],
+        project: { title: 'On-Prem Connection', desc: 'Install SHIR on your laptop. Connect to local SQL Server via ADF. Copy a table to ADLS.' },
+        interview: ['When do you need a Self-Hosted IR?','How does SHIR communicate with ADF?','Can SHIR be highly available?'],
+        answers: ['When data sources are behind firewalls, in private networks, or on-premise — Azure IR cannot reach them.','SHIR initiates outbound connections to ADF over HTTPS (port 443). No inbound firewall rules needed.','Yes, install SHIR on multiple machines. ADF will load-balance and failover automatically.']
+      }
+    ]
+  },
+  {
+    id: 'p3',
+    name: 'Phase 3 — Security & Governance',
+    icon: '🔐',
+    color: '#7C3AED',
+    desc: '1 week · Secure everything. No hardcoded secrets.',
+    lessons: [
+      {
+        id: 'l12', num: 'L12', title: 'Azure Key Vault & Secret Management',
+        time: '3h', xp: 130, stars: 3,
+        objectives: ['Key Vault secrets, keys, certificates','ADF Key Vault Linked Service','Secret Scope in Databricks','No hardcoded credentials policy'],
+        project: { title: 'Zero-Credential Pipeline', desc: 'ADF → Key Vault → Storage without any credentials in pipeline code' },
+        interview: ['How do you use Key Vault in ADF?','What is a Secret Scope in Databricks?','Why shouldn\'t you store secrets in ADF linked services directly?'],
+        answers: ['Create a Key Vault Linked Service in ADF. Reference secrets using @{linkedService.KeyVaultName.secret(\'secretName\')}.','A Secret Scope is a Databricks construct that maps to Key Vault, allowing notebooks to access secrets without exposing them.','Secrets stored directly in ADF are encrypted but visible to pipeline editors. Key Vault provides centralized rotation, auditing, and access control.']
+      },
+      {
+        id: 'l13', num: 'L13', title: 'RBAC, Managed Identity & OAuth',
+        time: '2h', xp: 110, stars: 3,
+        objectives: ['Azure RBAC roles and assignments','Principle of least privilege','Managed Identity for ADF and Databricks','Service Principal vs Managed Identity','OAuth 2.0 flow overview'],
+        project: { title: 'Least Privilege Setup', desc: 'Assign only Storage Blob Data Contributor to ADF Managed Identity on ADLS' },
+        interview: ['What is RBAC?','Managed Identity vs Service Principal?','What role does ADF need to write to ADLS?'],
+        answers: ['RBAC (Role-Based Access Control) defines what operations a principal can perform on Azure resources through role assignments.','Managed Identity is auto-managed by Azure with no secret rotation needed. Service Principal requires manual secret management but works outside Azure.','Storage Blob Data Contributor role for write access.']
+      }
+    ]
+  },
+  {
+    id: 'p4',
+    name: 'Phase 4 — Azure Databricks',
+    icon: '⚡',
+    color: '#FF3621',
+    desc: '3 weeks · Apache Spark mastery on Azure',
+    lessons: [
+      {
+        id: 'l14', num: 'L14', title: 'Apache Spark Fundamentals',
+        time: '4h', xp: 160, stars: 3,
+        objectives: ['Why Spark over Hadoop MapReduce','RDD → DataFrame → Dataset evolution','Driver and Executor architecture','Cluster topology (master/worker)','Partitions and parallelism','Lazy evaluation explained'],
+        project: { title: 'Spark Concepts Map', desc: 'Draw Spark job lifecycle: Action → Stage → Task → Partition → Executor' },
+        interview: ['What is lazy evaluation in Spark?','What is a partition in Spark?','Driver vs Executor role?'],
+        answers: ['Spark builds a DAG of transformations but only executes when an action is called. This enables optimization of the entire plan.','A partition is a unit of parallelism. One task processes one partition. More partitions = more parallel execution.','Driver coordinates job execution, maintains SparkContext; Executors run the actual tasks on cluster nodes.']
+      },
+      {
+        id: 'l15', num: 'L15', title: 'PySpark — Core Transformations',
+        time: '5h', xp: 180, stars: 3,
+        objectives: ['read(), write() with formats','select(), filter(), where()','join() types (inner, left, anti)','groupBy(), agg() functions','withColumn(), cast()','dropDuplicates(), fillna()','Window functions (rank, lag, lead)'],
+        project: { title: 'Customer Data Cleaner', desc: 'Clean a CSV with nulls, duplicates, and bad types. Output as Parquet to ADLS.' },
+        interview: ['Difference between filter() and where()?','When would you use a broadcast join?','What is a window function? Give an example.'],
+        answers: ['filter() and where() are aliases — identical behavior. where() may feel more SQL-natural.','Broadcast join when one DataFrame is small enough to fit in memory (<= 10MB default). Avoids shuffle.','Window functions compute values across related rows without collapsing them. Example: ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY date).']
+      },
+      {
+        id: 'l16', num: 'L16', title: 'Spark Performance Optimization',
+        time: '4h', xp: 170, stars: 5,
+        objectives: ['Cache vs Persist (storage levels)','Broadcast joins vs shuffle joins','Shuffle partitions tuning','Coalesce vs Repartition','Explain plan analysis','AQE (Adaptive Query Execution)'],
+        project: { title: 'Slow Query Fix', desc: 'Take a slow PySpark query. Profile with explain(). Fix shuffle. Measure before/after.' },
+        interview: ['Coalesce vs Repartition?','How do you reduce shuffle?','What is AQE?'],
+        answers: ['Repartition fully reshuffles data and can increase or decrease partitions. Coalesce only merges — no shuffle — but only decreases.','Use broadcast joins for small tables, filter early, use Parquet with predicate pushdown, tune spark.sql.shuffle.partitions.','Adaptive Query Execution dynamically adjusts query plans at runtime based on actual statistics.']
+      },
+      {
+        id: 'l17', num: 'L17', title: 'Delta Lake — ACID & Time Travel',
+        time: '5h', xp: 200, stars: 5,
+        objectives: ['Delta Lake over Parquet','ACID transactions on data lake','Versioning and Delta Log','Time Travel queries','MERGE (UPSERT) patterns','OPTIMIZE and Z-Ordering','VACUUM for cleanup'],
+        project: { title: 'Delta UPSERT Pipeline', desc: 'Build MERGE INTO delta table: new records inserted, changed records updated.' },
+        interview: ['How does Delta Lake achieve ACID?','What is time travel in Delta?','OPTIMIZE vs VACUUM?'],
+        answers: ['Delta uses a transaction log (_delta_log) that records all changes atomically. Reads see consistent snapshots.','Time travel lets you query historical versions: spark.read.format("delta").option("versionAsOf",5).load(path).','OPTIMIZE compacts small files and Z-Orders data. VACUUM removes old files no longer needed by version history.']
+      }
+    ]
+  },
+  {
+    id: 'p5',
+    name: 'Phase 5 — Advanced Data Engineering',
+    icon: '🚀',
+    color: '#F59E0B',
+    desc: '2 weeks · What separates mid-level from senior engineers',
+    lessons: [
+      {
+        id: 'l18', num: 'L18', title: 'Incremental Loading & CDC',
+        time: '4h', xp: 180, stars: 5,
+        objectives: ['Full load vs incremental load','Watermark-based incremental','Change Data Capture (CDC)','LastModifiedDate pattern in ADF','Idempotent pipeline design','Late arriving data handling'],
+        project: { title: 'Watermark Pipeline', desc: 'ADF pipeline that only copies records modified since last run. Store watermark in metadata table.' },
+        interview: ['How do you implement incremental load in ADF?','What is CDC?','What makes a pipeline idempotent?'],
+        answers: ['Use a watermark table to store last_run_timestamp. Filter source with WHERE modified_date > last_watermark. Update watermark after success.','CDC captures every insert, update, delete at the source in real-time. SQL Server CDC, Debezium, Azure SQL CDC.','A pipeline is idempotent if running it multiple times produces the same result. Use MERGE/UPSERT instead of INSERT to achieve this.']
+      },
+      {
+        id: 'l19', num: 'L19', title: 'SCD, Retry Logic & Exactly-Once Processing',
+        time: '4h', xp: 180, stars: 5,
+        objectives: ['SCD Type 1 (Overwrite)','SCD Type 2 (History rows)','SCD Type 3 (Previous value column)','Retry logic in ADF and Databricks','Exactly-once vs at-least-once semantics','Dead-letter queues'],
+        project: { title: 'SCD Type 2 Implementation', desc: 'Build a Databricks notebook that implements SCD Type 2 using Delta MERGE.' },
+        interview: ['Explain SCD Type 2.','How do you implement retry logic in ADF?','What is exactly-once processing?'],
+        answers: ['SCD Type 2 tracks historical changes by adding new rows with effective_start_date, effective_end_date, and is_current flag.','Set Retry count and Retry interval on activity settings. For complex retry, use Until activity with error checking.','Exactly-once ensures each record is processed exactly one time, not zero, not more. Achieved via idempotent writes and atomic commits.']
+      }
+    ]
+  },
+  {
+    id: 'p6',
+    name: 'Phase 6 — Monitoring & Alerting',
+    icon: '📡',
+    color: '#EC4899',
+    desc: '1 week · Know when things break before users do',
+    lessons: [
+      {
+        id: 'l20', num: 'L20', title: 'Azure Monitor & Log Analytics',
+        time: '3h', xp: 130, stars: 3,
+        objectives: ['Azure Monitor metrics and logs','Log Analytics workspace','KQL basics for querying logs','ADF monitoring dashboard','Alert rules and action groups'],
+        project: { title: 'ADF Monitor Setup', desc: 'Create alerts for: pipeline failure, long duration, and copy activity failures.' },
+        interview: ['How do you monitor ADF pipelines?','What is KQL?','How do you set up an alert in Azure Monitor?'],
+        answers: ['Via ADF Monitor tab, Azure Monitor diagnostic settings, or Log Analytics for advanced queries.','KQL (Kusto Query Language) queries Azure Monitor logs. Example: ADFPipelineRun | where Status == "Failed" | top 10 by Start.','Create a metric or log alert rule, define condition (e.g., failed runs > 0), configure action group with email/SMS/webhook.']
+      },
+      {
+        id: 'l21', num: 'L21', title: 'Logic Apps & Email Notifications',
+        time: '2h', xp: 100, stars: 2,
+        objectives: ['Logic Apps HTTP trigger','Sending emails on pipeline failure','Webhook integration with ADF','Teams/Slack notifications pattern'],
+        project: { title: 'Failure Email Alert', desc: 'ADF pipeline failure → Web Activity → Logic App → Email to team.' },
+        interview: ['How do you send email on ADF failure?','What is a Logic App?','Can ADF directly send emails?'],
+        answers: ['Add a Web Activity in the failure path of your pipeline that calls a Logic App HTTP trigger endpoint.','Logic Apps is Azure\'s low-code workflow automation service, similar to Zapier or Power Automate.','No, ADF cannot send emails directly. Use Logic Apps, SendGrid, or Azure Communication Services via Web Activity.']
+      }
+    ]
+  },
+  {
+    id: 'p7',
+    name: 'Phase 7 — Azure Synapse Analytics',
+    icon: '🔭',
+    color: '#06B6D4',
+    desc: '2 weeks · The serving layer for enterprise analytics',
+    lessons: [
+      {
+        id: 'l22', num: 'L22', title: 'Serverless SQL Pool & OPENROWSET',
+        time: '4h', xp: 160, stars: 3,
+        objectives: ['Serverless vs Dedicated SQL Pool','OPENROWSET for querying ADLS','External tables over Delta/Parquet','Views for Power BI integration','Cost optimization (pay per query)'],
+        project: { title: 'ADLS Query Layer', desc: 'Create external tables on Delta Lake files in ADLS. Build views for Power BI.' },
+        interview: ['Serverless vs Dedicated SQL Pool?','What is OPENROWSET?','How do you expose Delta Lake data to Power BI via Synapse?'],
+        answers: ['Serverless: pay per query, no provisioning, great for ad-hoc. Dedicated: provisioned DWU, better for consistent heavy workloads.','OPENROWSET reads files directly from ADLS in SQL queries without loading data: SELECT * FROM OPENROWSET(BULK \'path\', FORMAT=\'PARQUET\').','Create external tables or views on top of Delta files in Synapse Serverless, then connect Power BI to Synapse SQL endpoint.']
+      },
+      {
+        id: 'l23', num: 'L23', title: 'Dedicated SQL Pool & Performance',
+        time: '3h', xp: 140, stars: 4,
+        objectives: ['MPP architecture','Distribution: Hash, Round-Robin, Replicated','Columnstore indexes','Statistics and query performance','Cost controls and pause/resume'],
+        project: { title: 'Performance Tuning', desc: 'Load 10M row table. Compare Hash vs Round-Robin distribution performance.' },
+        interview: ['What is MPP?','When to use hash distribution?','What is a columnstore index?'],
+        answers: ['MPP (Massively Parallel Processing) distributes query execution across 60 compute nodes simultaneously.','Hash distribute large fact tables on join key to minimize data movement during joins.','Columnstore indexes store data column-by-column, enabling high compression and fast analytical aggregations.']
+      }
+    ]
+  },
+  {
+    id: 'p8',
+    name: 'Phase 8 — Power BI (Engineering Focus)',
+    icon: '📊',
+    color: '#F59E0B',
+    desc: '1 week · Connect and serve data to business users',
+    lessons: [
+      {
+        id: 'l24', num: 'L24', title: 'Power BI — Data Modeling & DAX Basics',
+        time: '3h', xp: 120, stars: 2,
+        objectives: ['Import vs DirectQuery vs Live Connection','Star schema design for Power BI','Relationships (active/inactive)','Basic DAX: CALCULATE, SUMX, RELATED','Measures vs Calculated Columns'],
+        project: { title: 'Sales Dashboard', desc: 'Connect Power BI → Synapse → Build star schema model → KPI dashboard.' },
+        interview: ['Import vs DirectQuery?','What is DAX?','Star schema vs snowflake in Power BI?'],
+        answers: ['Import loads data into Power BI memory for fast performance. DirectQuery queries source in real-time (slower, always fresh).','DAX (Data Analysis Expressions) is the formula language for Power BI. Used to create measures and calculated columns.','Star schema preferred in Power BI — fewer joins, better performance than snowflake.']
+      }
+    ]
+  },
+  {
+    id: 'p9',
+    name: 'Phase 9 — Enterprise Capstone Projects',
+    icon: '🏆',
+    color: '#FFD700',
+    desc: 'Portfolio projects that prove you can work at enterprise level',
+    lessons: [
+      {
+        id: 'l25', num: 'L25', title: 'Project 1 — Sales Data Lake (End-to-End)',
+        time: '8h', xp: 300, stars: 4,
+        objectives: ['CSV ingestion via ADF','Raw zone storage in ADLS','Databricks transformation (PySpark)','Delta Lake output','Synapse external table','Power BI dashboard'],
+        project: { title: '🚀 Sales Data Lake', desc: 'CSV → ADF → ADLS (raw) → Databricks → Parquet (processed) → Synapse → Power BI' },
+        interview: ['Walk me through your end-to-end pipeline architecture.','How did you handle schema changes?','How would you add monitoring to this?'],
+        answers: ['Describe each layer: ingestion (ADF), raw storage (ADLS Bronze), transformation (Databricks Silver/Gold), serving (Synapse), visualization (Power BI).','Used schema drift in ADF and schema evolution in Delta Lake.','Add ADF diagnostic logs to Log Analytics, Databricks cluster metrics, Synapse query monitoring. Alert on failures.']
+      },
+      {
+        id: 'l26', num: 'L26', title: 'Project 2 — Hybrid On-Prem to Azure ETL',
+        time: '6h', xp: 250, stars: 4,
+        objectives: ['SHIR installation for SQL Server','Parameterized ADF pipeline','Incremental load with watermark','Delta Lake MERGE on Databricks'],
+        project: { title: '🔗 Hybrid ETL', desc: 'SQL Server (local) → SHIR → ADF → ADLS → Databricks → Delta Lake' },
+        interview: ['How did you connect to on-premise SQL Server?','How did you handle incremental loads?','What would break if the SHIR node goes offline?'],
+        answers: ['Installed Self-Hosted IR on SQL Server machine. Registered in ADF. Created SQL Server Linked Service via SHIR.','Watermark table in SQL Server stores last_run. ADF queries: WHERE modified_date > @last_watermark.','Pipeline fails. Mitigation: install SHIR on 2 nodes for HA. Add monitoring alert on SHIR health.']
+      },
+      {
+        id: 'l27', num: 'L27', title: 'Project 3 — Incremental Customer Pipeline',
+        time: '6h', xp: 250, stars: 4,
+        objectives: ['LastModifiedDate watermark pattern','SCD Type 2 with Delta MERGE','Parameterized ADF execution','Power BI incremental refresh'],
+        project: { title: '📈 Customer History Pipeline', desc: 'SQL → LastModifiedDate → ADF → Delta MERGE (SCD2) → Power BI' },
+        interview: ['Explain your SCD Type 2 implementation.','How do you handle late-arriving data?','What if a record was deleted at source?'],
+        answers: ['MERGE INTO delta_table WHEN MATCHED AND source differs THEN UPDATE (set end_date, is_current=false) + INSERT new row. WHEN NOT MATCHED THEN INSERT.','Accept late data up to N days. Reprocess affected partitions. Use watermark with buffer window.','Add a soft-delete flag at source. In MERGE: WHEN MATCHED AND source.deleted=1 THEN UPDATE is_current=false.']
+      },
+      {
+        id: 'l28', num: 'L28', title: 'Project 4 — Event-Driven Pipeline',
+        time: '6h', xp: 250, stars: 4,
+        objectives: ['Storage Event Trigger in ADF','JSON ingestion and flattening','Delta Lake append pattern','Event-driven vs scheduled pipelines'],
+        project: { title: '⚡ Event-Driven Ingestion', desc: 'Blob Upload event → ADF trigger → Databricks (JSON flatten) → Delta Lake' },
+        interview: ['How does Storage Event Trigger work?','How do you flatten nested JSON in PySpark?','What are the advantages of event-driven pipelines?'],
+        answers: ['Azure Event Grid detects blob creation and fires ADF trigger with file metadata in @triggerBody(). No polling needed.','Use explode() for arrays, getField() or dot notation for nested structs. Or use from_json() with defined schema.','Lower latency, no unnecessary processing, scales automatically, decoupled architecture.']
+      },
+      {
+        id: 'l29', num: 'L29', title: '🏆 CAPSTONE — Full Enterprise Pipeline',
+        time: '20h', xp: 500, stars: 5,
+        objectives: ['On-prem SQL Server via SHIR','ADF with full parameterization + Key Vault','Medallion Architecture in ADLS + Databricks','Delta Lake with ACID and time travel','Synapse Serverless SQL views','Power BI DirectQuery dashboard','Azure Monitor + Logic Apps email alerts'],
+        project: { title: '🌟 Enterprise Azure Data Platform', desc: 'SQL Server → SHIR → ADF → Bronze ADLS → Databricks → Silver/Gold Delta → Synapse → Power BI → Monitor → Logic Apps' },
+        interview: ['What would you do differently if you had to rebuild this?','How would you scale this for 10x data volume?','How did you handle pipeline failures and data quality?'],
+        answers: ['Modularize pipelines further, add data quality framework (Great Expectations/Databricks DLT), add Unity Catalog for governance.','Increase Databricks cluster size, add auto-scaling, partition ADLS by date, use Synapse Dedicated Pool for heavy queries.','ADF retry logic, dead-letter storage for bad files, Databricks data quality checks with quarantine zone.']
+      }
+    ]
+  }
+];
+
+const ACHIEVEMENTS = [
+  { id: 'first-step', name: 'First Step', desc: 'Complete your first lesson', icon: '👶', color: 'rgba(16,185,129,0.4)', trigger: (c) => c >= 1 },
+  { id: 'foundation', name: 'Foundation Builder', desc: 'Complete Phase 0', icon: '🌱', color: 'rgba(16,185,129,0.5)', trigger: (c,p) => p['p0'] >= 3 },
+  { id: 'storage-master', name: 'Storage Master', desc: 'Complete Phase 1', icon: '🗄️', color: 'rgba(0,120,212,0.5)', trigger: (c,p) => p['p1'] >= 2 },
+  { id: 'adf-explorer', name: 'ADF Explorer', desc: 'Complete all ADF lessons', icon: '⚙️', color: 'rgba(0,120,212,0.6)', trigger: (c,p) => p['p2'] >= 6 },
+  { id: 'security-guru', name: 'Security Guru', desc: 'Complete Phase 3', icon: '🔐', color: 'rgba(124,58,237,0.5)', trigger: (c,p) => p['p3'] >= 2 },
+  { id: 'spark-wizard', name: 'Spark Wizard', desc: 'Complete all Databricks lessons', icon: '⚡', color: 'rgba(255,54,33,0.5)', trigger: (c,p) => p['p4'] >= 4 },
+  { id: 'delta-master', name: 'Delta Master', desc: 'Complete Delta Lake lesson', icon: '△', color: 'rgba(255,54,33,0.6)', trigger: (c,p,done) => done['l17'] },
+  { id: 'senior-eng', name: 'Senior Engineer', desc: 'Complete Phase 5', icon: '🚀', color: 'rgba(245,158,11,0.5)', trigger: (c,p) => p['p5'] >= 2 },
+  { id: 'monitor-hero', name: 'Monitor Hero', desc: 'Complete Phase 6', icon: '📡', color: 'rgba(236,72,153,0.5)', trigger: (c,p) => p['p6'] >= 2 },
+  { id: 'synapse-sage', name: 'Synapse Sage', desc: 'Complete Phase 7', icon: '🔭', color: 'rgba(6,182,212,0.5)', trigger: (c,p) => p['p7'] >= 2 },
+  { id: 'portfolio-ready', name: 'Portfolio Ready', desc: 'Complete 3 projects', icon: '💼', color: 'rgba(255,215,0,0.5)', trigger: (c,p) => p['p9'] >= 3 },
+  { id: 'azure-architect', name: 'Azure Architect', desc: 'Complete the full roadmap', icon: '☁️', color: 'rgba(0,212,255,0.6)', trigger: (c) => c >= 29 },
+  { id: 'streak-3', name: '3-Day Streak', desc: 'Study 3 days in a row', icon: '🔥', color: 'rgba(249,115,22,0.5)', trigger: (c,p,d,s) => s >= 3 },
+  { id: 'streak-7', name: 'Week Warrior', desc: 'Study 7 days in a row', icon: '💪', color: 'rgba(249,115,22,0.7)', trigger: (c,p,d,s) => s >= 7 },
+  { id: 'interview-ready', name: 'Interview Ready', desc: 'Complete Phase 4 (Databricks)', icon: '🎯', color: 'rgba(124,58,237,0.6)', trigger: (c,p) => p['p4'] >= 4 },
+];
+
+const LEVELS = [
+  { min: 0, max: 499, level: 1, title: 'Azure Initiate', icon: '🌱', sub: 'Begin your data engineering journey' },
+  { min: 500, max: 999, level: 2, title: 'Data Apprentice', icon: '📚', sub: 'Building your foundation' },
+  { min: 1000, max: 1799, level: 3, title: 'ETL Explorer', icon: '🔍', sub: 'Navigating the data landscape' },
+  { min: 1800, max: 2799, level: 4, title: 'Pipeline Builder', icon: '⚙️', sub: 'Constructing data highways' },
+  { min: 2800, max: 3999, level: 5, title: 'Spark Engineer', icon: '⚡', sub: 'Igniting data at scale' },
+  { min: 4000, max: 5499, level: 6, title: 'Data Craftsman', icon: '🛠️', sub: 'Shaping enterprise solutions' },
+  { min: 5500, max: 7499, level: 7, title: 'Cloud Architect', icon: '☁️', sub: 'Designing the data future' },
+  { min: 7500, max: 9999, level: 8, title: 'Azure Expert', icon: '🏆', sub: 'Mastering the cloud platform' },
+  { min: 10000, max: Infinity, level: 9, title: 'Azure Data Engineer', icon: '👑', sub: 'You made it. Go get that job!' },
+];
+
+// ══════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════
+let state = {
+  completed: {},
+  notes: {},
+  streak: 0,
+  lastStudyDate: null,
+  totalXP: 0,
+  unlockedAchievements: {},
+  openPhases: {},
+  expandedLessons: {},
+  pomodoroSessions: 0,
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('azureQuestState_v3');
+    if (saved) state = { ...state, ...JSON.parse(saved) };
+  } catch(e) {}
+}
+function saveState() {
+  localStorage.setItem('azureQuestState_v3', JSON.stringify(state));
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════════════════════════════
+function render() {
+  renderPhases();
+  renderAchievements();
+  renderDashboard();
+  renderInterview();
+  updateStats();
+}
+
+function renderPhases() {
+  const container = document.getElementById('phasesContainer');
+  container.innerHTML = '';
+  PHASES.forEach(phase => {
+    const done = phase.lessons.filter(l => state.completed[l.id]).length;
+    const total = phase.lessons.length;
+    const pct = total > 0 ? Math.round((done/total)*100) : 0;
+    const isOpen = state.openPhases[phase.id];
+    const isComplete = done === total;
+    const div = document.createElement('div');
+    div.className = `phase-section ${isOpen ? 'open' : ''} ${isComplete ? 'completed' : ''}`;
+    div.innerHTML = `
+      <div class="phase-header" onclick="togglePhase('${phase.id}')">
+        <div class="phase-icon" style="background:${phase.color}22;border:1px solid ${phase.color}44">
+          ${phase.icon}
+        </div>
+        <div class="phase-meta">
+          <div class="phase-name">${phase.name}</div>
+          <div class="phase-desc">${phase.desc}</div>
+        </div>
+        <div class="phase-right">
+          <div>
+            <div class="mini-progress">
+              <div class="mini-progress-fill" style="width:${pct}%;background:linear-gradient(90deg,${phase.color},${phase.color}99)"></div>
+            </div>
+            <div class="phase-progress-text" style="color:${phase.color}">${done}/${total}</div>
+          </div>
+          <div class="chevron">▼</div>
+        </div>
+      </div>
+      <div class="phase-body">
+        ${phase.lessons.map(l => renderLesson(l, phase.color)).join('')}
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderLesson(l, phaseColor) {
+  const done = state.completed[l.id];
+  const expanded = state.expandedLessons[l.id];
+  const stars = '⭐'.repeat(l.stars) + '☆'.repeat(5-l.stars);
+  const note = state.notes[l.id] || '';
+  return `
+    <div class="lesson-card ${done?'done':''} ${expanded?'expanded':''}" id="card-${l.id}">
+      <div class="lesson-header">
+        <div class="lesson-checkbox" onclick="toggleLesson('${l.id}')" title="Mark complete">
+          ${done ? '✓' : ''}
+        </div>
+        <div class="lesson-number">${l.num}</div>
+        <div class="lesson-title-wrap">
+          <div class="lesson-title">${l.title}</div>
+          <div class="lesson-tags">
+            <span class="tag tag-time">⏱ ${l.time}</span>
+            <span class="tag tag-xp">+${l.xp} XP</span>
+            <span class="lesson-stars">${stars}</span>
+          </div>
+        </div>
+        <button class="lesson-expand-btn" onclick="toggleExpand('${l.id}')">▼</button>
+      </div>
+      <div class="lesson-body">
+        <div class="lesson-section-title">📚 What You'll Learn</div>
+        <ul class="lesson-objectives">
+          ${l.objectives.map(o=>`<li>${o}</li>`).join('')}
+        </ul>
+        <div class="lesson-section-title">🛠️ Mini Project</div>
+        <div class="mini-project-box">
+          <div class="project-title">${l.project.title}</div>
+          ${l.project.desc}
+        </div>
+        <div class="lesson-section-title">💼 Interview Questions</div>
+        ${l.interview.map((q,i)=>`
+          <div class="interview-q">
+            ❓ ${q}
+            <span style="float:right;cursor:pointer;color:var(--xp-color);font-size:11px" onclick="toggleAnswer(this,'${l.id}',${i})">Show Answer</span>
+            <div class="interview-answer" id="ans-${l.id}-${i}">${l.answers[i]}</div>
+          </div>
+        `).join('')}
+        <div class="lesson-section-title">📝 My Notes</div>
+        <textarea class="notes-textarea" 
+          placeholder="Write your key takeaways, insights, or reminders here..."
+          oninput="saveNote('${l.id}',this.value)">${note}</textarea>
+      </div>
+    </div>
+  `;
+}
+
+function renderAchievements() {
+  const grid = document.getElementById('achievementsGrid');
+  const completedCount = Object.values(state.completed).filter(Boolean).length;
+  const phaseCounts = {};
+  PHASES.forEach(p => {
+    phaseCounts[p.id] = p.lessons.filter(l => state.completed[l.id]).length;
+  });
+  grid.innerHTML = ACHIEVEMENTS.map(a => {
+    const isUnlocked = a.trigger(completedCount, phaseCounts, state.completed, state.streak);
+    if (isUnlocked && !state.unlockedAchievements[a.id]) {
+      state.unlockedAchievements[a.id] = true;
+      saveState();
+    }
+    return `
+      <div class="achievement-card ${isUnlocked?'unlocked':'locked'}" style="--ach-color:${a.color}">
+        ${isUnlocked ? '<div class="ach-badge">Unlocked</div>' : '<div class="ach-badge" style="background:rgba(255,255,255,0.1);color:var(--text-muted)">Locked</div>'}
+        <span class="ach-icon">${a.icon}</span>
+        <div class="ach-name">${a.name}</div>
+        <div class="ach-desc">${a.desc}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderDashboard() {
+  const completedCount = Object.values(state.completed).filter(Boolean).length;
+  const totalLessons = PHASES.reduce((s,p) => s+p.lessons.length, 0);
+  const phasePcts = PHASES.map(p => ({
+    name: p.name.split('—')[1]?.trim() || p.name,
+    pct: Math.round((p.lessons.filter(l=>state.completed[l.id]).length / p.lessons.length)*100),
+    color: p.color
+  }));
+  const readiness = Math.round((completedCount / totalLessons) * 100);
+
+  document.getElementById('jobReadinessPct').textContent = readiness + '%';
+  document.getElementById('jobReadinessBars').innerHTML = phasePcts.map(p => `
+    <div class="jr-bar-row">
+      <div class="jr-bar-name">${p.name.substring(0,18)}</div>
+      <div class="jr-bar"><div class="jr-bar-fill" style="width:${p.pct}%;background:${p.color}"></div></div>
+      <div class="jr-pct">${p.pct}%</div>
+    </div>
+  `).join('');
+
+  const achs = Object.keys(state.unlockedAchievements).length;
+  const totalXP = Object.entries(state.completed)
+    .filter(([,v])=>v)
+    .reduce((sum,[k]) => {
+      const l = PHASES.flatMap(p=>p.lessons).find(l=>l.id===k);
+      return sum + (l?.xp || 0);
+    }, 0);
+
+  document.getElementById('dashStats').innerHTML = [
+    { icon:'📚', val: completedCount, lbl:'Lessons Completed' },
+    { icon:'✨', val: totalXP, lbl:'Total XP Earned' },
+    { icon:'🔥', val: state.streak, lbl:'Day Study Streak' },
+    { icon:'🏆', val: achs, lbl:'Achievements Unlocked' },
+    { icon:'📈', val: readiness+'%', lbl:'Job Readiness' },
+    { icon:'🎯', val: PHASES.filter(p=>p.lessons.every(l=>state.completed[l.id])).length, lbl:'Phases Completed' },
+  ].map(s=>`
+    <div class="dash-stat">
+      <div class="dash-stat-icon">${s.icon}</div>
+      <div class="dash-stat-val">${s.val}</div>
+      <div class="dash-stat-lbl">${s.lbl}</div>
+    </div>
+  `).join('');
+}
+
+function renderInterview() {
+  const container = document.getElementById('interviewContainer');
+  const allQuestions = [];
+  PHASES.forEach(p => p.lessons.forEach(l => {
+    l.interview.forEach((q,i) => {
+      allQuestions.push({ q, a: l.answers[i], lesson: l.title, phase: p.name });
+    });
+  }));
+  // Shuffle
+  const shuffled = [...allQuestions].sort(() => Math.random()-0.5).slice(0, 12);
+  container.innerHTML = shuffled.map((item, idx) => `
+    <div class="interview-card">
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px">${item.phase} · ${item.lesson}</div>
+      <div class="interview-q-big">Q${idx+1}. ${item.q}</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="reveal-btn" onclick="revealAnswer(this, 'ia-${idx}')">💡 Reveal Answer</button>
+      </div>
+      <div class="interview-answer" id="ia-${idx}" style="margin-top:12px">${item.a}</div>
+    </div>
+  `).join('') + `<button class="btn-primary" onclick="renderInterview()" style="margin-top:8px">🔀 Shuffle Questions</button>`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// INTERACTIONS
+// ══════════════════════════════════════════════════════════════════════════
+function toggleLesson(id) {
+  const wasCompleted = state.completed[id];
+  state.completed[id] = !wasCompleted;
+  const lesson = PHASES.flatMap(p=>p.lessons).find(l=>l.id===id);
+  if (state.completed[id]) {
+    showToast(`✅ ${lesson?.title} completed! +${lesson?.xp} XP`, '#10B981');
+    spawnConfetti();
+    checkNewAchievements();
+  } else {
+    showToast(`↩️ ${lesson?.title} unchecked`, '#94A3B8');
+  }
+  saveState();
+  updateStats();
+  // Re-render just the card
+  const card = document.getElementById(`card-${id}`);
+  if (card) {
+    const done = state.completed[id];
+    card.className = `lesson-card ${done?'done':''} ${state.expandedLessons[id]?'expanded':''}`;
+    const checkbox = card.querySelector('.lesson-checkbox');
+    if (checkbox) checkbox.textContent = done ? '✓' : '';
+    const lessonTitle = card.querySelector('.lesson-title');
+    if (lessonTitle) lessonTitle.style.textDecoration = done ? 'line-through' : '';
+  }
+  renderPhases();
+  renderAchievements();
+  renderDashboard();
+}
+
+function toggleExpand(id) {
+  state.expandedLessons[id] = !state.expandedLessons[id];
+  saveState();
+  const card = document.getElementById(`card-${id}`);
+  if (card) {
+    card.classList.toggle('expanded', state.expandedLessons[id]);
+  }
+}
+
+function togglePhase(id) {
+  state.openPhases[id] = !state.openPhases[id];
+  saveState();
+  const sections = document.querySelectorAll('.phase-section');
+  sections.forEach(s => {
+    const header = s.querySelector('.phase-header');
+    if (header && header.getAttribute('onclick').includes(id)) {
+      s.classList.toggle('open', state.openPhases[id]);
+    }
+  });
+}
+
+function saveNote(id, val) {
+  state.notes[id] = val;
+  saveState();
+}
+
+function toggleAnswer(btn, lessonId, idx) {
+  const ans = document.getElementById(`ans-${lessonId}-${idx}`);
+  if (ans) {
+    const showing = ans.style.display === 'block';
+    ans.style.display = showing ? 'none' : 'block';
+    btn.textContent = showing ? 'Show Answer' : 'Hide Answer';
+  }
+}
+
+function revealAnswer(btn, id) {
+  const ans = document.getElementById(id);
+  if (ans) {
+    const showing = ans.style.display === 'block';
+    ans.style.display = showing ? 'none' : 'block';
+    btn.textContent = showing ? '💡 Reveal Answer' : '🙈 Hide Answer';
+  }
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'interview') renderInterview();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// STATS UPDATE
+// ══════════════════════════════════════════════════════════════════════════
+function updateStats() {
+  const allLessons = PHASES.flatMap(p=>p.lessons);
+  const completedLessons = allLessons.filter(l => state.completed[l.id]);
+  const totalXP = completedLessons.reduce((s,l) => s+l.xp, 0);
+  const totalLessons = allLessons.length;
+  const completedCount = completedLessons.length;
+  const pct = Math.round((completedCount / totalLessons) * 100);
+
+  document.getElementById('lessonsCount').textContent = completedCount;
+  document.getElementById('totalLessons').textContent = totalLessons;
+  document.getElementById('totalXP').textContent = totalXP.toLocaleString();
+  document.getElementById('streakCount').textContent = state.streak;
+  document.getElementById('overallPct').textContent = pct;
+  document.getElementById('overallFill').style.width = pct + '%';
+
+  // Level
+  const level = LEVELS.find(l => totalXP >= l.min && totalXP <= l.max) || LEVELS[LEVELS.length-1];
+  const nextLevel = LEVELS.find(l => l.level === level.level + 1);
+  const xpInLevel = totalXP - level.min;
+  const xpNeeded = nextLevel ? nextLevel.min - level.min : 1;
+  const xpPct = Math.min(100, Math.round((xpInLevel / xpNeeded) * 100));
+
+  document.getElementById('levelAvatar').textContent = level.icon;
+  document.getElementById('levelTitle').textContent = `Level ${level.level} — ${level.title}`;
+  document.getElementById('levelSub').textContent = level.sub;
+  document.getElementById('xpBarFill').style.width = xpPct + '%';
+  document.getElementById('xpText').textContent = nextLevel
+    ? `${totalXP.toLocaleString()} / ${nextLevel.min.toLocaleString()} XP to Level ${level.level+1}`
+    : `${totalXP.toLocaleString()} XP — MAX LEVEL! 🎉`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// STREAK
+// ══════════════════════════════════════════════════════════════════════════
+function logStudyDay() {
+  const today = new Date().toDateString();
+  const yesterday = new Date(Date.now()-86400000).toDateString();
+  if (state.lastStudyDate === today) {
+    showToast('✅ Already logged today! Keep it up! 🔥', '#F97316');
+    return;
+  }
+  if (state.lastStudyDate === yesterday) {
+    state.streak += 1;
+  } else {
+    state.streak = 1;
+  }
+  state.lastStudyDate = today;
+  saveState();
+  updateStats();
+  renderAchievements();
+  showToast(`🔥 Day ${state.streak} streak! You're on fire!`, '#F97316');
+  if (state.streak % 7 === 0) spawnConfetti();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// ACHIEVEMENTS CHECK
+// ══════════════════════════════════════════════════════════════════════════
+function checkNewAchievements() {
+  const completedCount = Object.values(state.completed).filter(Boolean).length;
+  const phaseCounts = {};
+  PHASES.forEach(p => phaseCounts[p.id] = p.lessons.filter(l=>state.completed[l.id]).length);
+  ACHIEVEMENTS.forEach(a => {
+    if (!state.unlockedAchievements[a.id] && a.trigger(completedCount, phaseCounts, state.completed, state.streak)) {
+      state.unlockedAchievements[a.id] = true;
+      saveState();
+      setTimeout(() => showToast(`🏆 Achievement Unlocked: ${a.icon} ${a.name}!`, '#FFD700'), 800);
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════════════════
+function showToast(msg, color='#0078D4') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.style.borderColor = color + '66';
+  toast.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0"></span>${msg}`;
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('toast-out');
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// CONFETTI
+// ══════════════════════════════════════════════════════════════════════════
+function spawnConfetti() {
+  const colors = ['#0078D4','#00D4FF','#7C3AED','#EC4899','#10B981','#FFD700','#F97316'];
+  for (let i=0; i<40; i++) {
+    setTimeout(() => {
+      const el = document.createElement('div');
+      el.className = 'confetti-piece';
+      el.style.cssText = `
+        left:${Math.random()*100}vw;
+        top:-10px;
+        background:${colors[Math.floor(Math.random()*colors.length)]};
+        --fall-dur:${1.5+Math.random()*2}s;
+        width:${6+Math.random()*8}px;
+        height:${6+Math.random()*8}px;
+        border-radius:${Math.random()>0.5?'50%':'2px'};
+      `;
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 4000);
+    }, i*30);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// STARS BACKGROUND
+// ══════════════════════════════════════════════════════════════════════════
+function initStars() {
+  const container = document.getElementById('stars');
+  for (let i=0; i<80; i++) {
+    const star = document.createElement('div');
+    star.className = 'star';
+    const size = Math.random()*2.5+0.5;
+    star.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      --dur:${2+Math.random()*4}s;
+      --max-op:${0.3+Math.random()*0.6};
+      animation-delay:${Math.random()*4}s;
+    `;
+    container.appendChild(star);
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// POMODORO TIMER
+// ══════════════════════════════════════════════════════════════════════════
+let timerInterval = null;
+let timerSeconds = 25*60;
+let timerTotal = 25*60;
+let timerRunning = false;
+let timerMode = 'focus';
+let sessions = 0;
+
+const TIMER_MODES = { focus: 25*60, short: 5*60, long: 15*60 };
+const TIMER_LABELS = { focus: 'Focus Session', short: 'Short Break', long: 'Long Break' };
+
+function setTimerMode(mode, btn) {
+  timerMode = mode;
+  document.querySelectorAll('.timer-mode-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  resetTimer();
+  document.getElementById('timerModeLabel').textContent = TIMER_LABELS[mode];
+}
+
+function toggleTimer() {
+  if (timerRunning) {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    document.getElementById('timerStartBtn').textContent = '▶ Resume';
+  } else {
+    timerRunning = true;
+    document.getElementById('timerStartBtn').textContent = '⏸ Pause';
+    timerInterval = setInterval(() => {
+      timerSeconds--;
+      updateTimerDisplay();
+      if (timerSeconds <= 0) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        document.getElementById('timerStartBtn').textContent = '▶ Start';
+        if (timerMode === 'focus') {
+          sessions = Math.min(sessions+1, 4);
+          updateSessionDots();
+          showToast('🎉 Focus session complete! Take a break!', '#10B981');
+          spawnConfetti();
+        } else {
+          showToast('☕ Break over! Back to work!', '#0078D4');
+        }
+        timerSeconds = TIMER_MODES[timerMode];
+        updateTimerDisplay();
+      }
+    }, 1000);
+  }
+}
+
+function resetTimer() {
+  clearInterval(timerInterval);
+  timerRunning = false;
+  timerSeconds = TIMER_MODES[timerMode];
+  timerTotal = TIMER_MODES[timerMode];
+  document.getElementById('timerStartBtn').textContent = '▶ Start';
+  updateTimerDisplay();
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(timerSeconds/60).toString().padStart(2,'0');
+  const s = (timerSeconds%60).toString().padStart(2,'0');
+  document.getElementById('timerDisplay').textContent = `${m}:${s}`;
+  const total = TIMER_MODES[timerMode];
+  const pct = timerSeconds / total;
+  const circumference = 2 * Math.PI * 80;
+  document.getElementById('timerRing').style.strokeDashoffset = circumference * (1 - pct);
+  document.getElementById('timerRing').style.strokeDasharray = circumference;
+}
+
+function updateSessionDots() {
+  document.querySelectorAll('.session-dot').forEach((dot,i) => {
+    dot.classList.toggle('filled', i < sessions);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  loadState();
+  initStars();
+  render();
+  updateTimerDisplay();
+
+  // Open first phase by default
+  if (Object.keys(state.openPhases).length === 0) {
+    state.openPhases['p0'] = true;
+    saveState();
+    renderPhases();
+  }
+});
+</script>
+</body>
+</html>
