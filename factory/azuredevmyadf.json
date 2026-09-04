@@ -1,0 +1,15 @@
+{
+	"name": "azuredevmyadf",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "fd85da9b-f120-4d61-acc4-67dbd0c4a8a6",
+		"tenantId": "fb6e9e80-9765-433b-a5cf-34291f5eebd7"
+	}
+}
