@@ -1,0 +1,14 @@
+{
+	"name": "delete blank files",
+	"properties": {
+		"variables": {
+			"FileName": {
+				"type": "String"
+			},
+			"size": {
+				"type": "Integer"
+			}
+		},
+		"annotations": []
+	}
+}
