@@ -1079,7 +1079,7 @@
 					"location": {
 						"type": "AzureBlobFSLocation",
 						"fileName": {
-							"value": "@concat(dataset().ParamCountry,'_',dataset().ParamRegion)",
+							"value": "@concat(dataset().ParamCountry,'_',dataset().ParamRegion,'.csv')",
 							"type": "Expression"
 						},
 						"folderPath": {
