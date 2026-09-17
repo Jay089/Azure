@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDatabase1'"
 		},
+		"LS_LocalFile_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_LocalFile'"
+		},
 		"AzureDataLakeStorage1_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://jaydevadls.dfs.core.windows.net/"
@@ -30,6 +34,14 @@
 		"AzureSqlDatabase1_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "sqladmin"
+		},
+		"LS_LocalFile_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "D:\\"
+		},
+		"LS_LocalFile_properties_typeProperties_userId": {
+			"type": "string",
+			"defaultValue": "JAY\\ASUS"
 		},
 		"containerUri": {
 			"type": "string",
@@ -93,11 +105,40 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"LS_LocalFile_password": {
+						"value": "[parameters('LS_LocalFile_password')]"
+					},
+					"LS_LocalFile_properties_typeProperties_host": {
+						"value": "[parameters('LS_LocalFile_properties_typeProperties_host')]"
+					},
+					"LS_LocalFile_properties_typeProperties_userId": {
+						"value": "[parameters('LS_LocalFile_properties_typeProperties_userId')]"
 					}
 				}
 			},
 			"dependsOn": [
 				"[resourceId('Microsoft.Resources/deployments', 'azuredevmyadf_ArmTemplate_0')]"
+			]
+		},
+		{
+			"name": "azuredevmyadf_ArmTemplate_2",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_2.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'azuredevmyadf_ArmTemplate_1')]"
 			]
 		}
 	]

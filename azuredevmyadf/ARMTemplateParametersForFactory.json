@@ -11,6 +11,9 @@
 		"AzureSqlDatabase1_password": {
 			"value": ""
 		},
+		"LS_LocalFile_password": {
+			"value": ""
+		},
 		"AzureDataLakeStorage1_properties_typeProperties_url": {
 			"value": "https://jaydevadls.dfs.core.windows.net/"
 		},
@@ -22,6 +25,12 @@
 		},
 		"AzureSqlDatabase1_properties_typeProperties_userName": {
 			"value": "sqladmin"
+		},
+		"LS_LocalFile_properties_typeProperties_host": {
+			"value": "D:\\"
+		},
+		"LS_LocalFile_properties_typeProperties_userId": {
+			"value": "JAY\\ASUS"
 		}
 	}
 }
